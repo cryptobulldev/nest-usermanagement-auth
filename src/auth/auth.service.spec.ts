@@ -4,9 +4,13 @@ import { UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
-import * as bcrypt from 'bcrypt';
+import { hashPassword, comparePassword } from '../common/utils/hash.util';
 
-jest.mock('bcrypt');
+// ✅ Mock the hashing utilities
+jest.mock('../common/utils/hash.util', () => ({
+  hashPassword: jest.fn(),
+  comparePassword: jest.fn(),
+}));
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -54,12 +58,16 @@ describe('AuthService', () => {
     jest.clearAllMocks();
   });
 
+  // ---------------------------
+  // REGISTER
+  // ---------------------------
   describe('register', () => {
     it('should register a new user and return tokens', async () => {
       const email = 'newuser@example.com';
       const password = 'password123';
       const name = 'New User';
 
+      (hashPassword as jest.Mock).mockResolvedValue('hashedPassword');
       usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue(mockUser);
       jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
@@ -68,9 +76,10 @@ describe('AuthService', () => {
       const result = await service.register(email, password, name);
 
       expect(usersService.findByEmail).toHaveBeenCalledWith(email);
+      expect(hashPassword).toHaveBeenCalledWith(password);
       expect(usersService.create).toHaveBeenCalledWith({
         email,
-        password,
+        password: 'hashedPassword',
         name,
       });
       expect(jwtService.sign).toHaveBeenCalledTimes(2);
@@ -96,20 +105,23 @@ describe('AuthService', () => {
     });
   });
 
+  // ---------------------------
+  // LOGIN
+  // ---------------------------
   describe('login', () => {
     it('should login user with valid credentials and return tokens', async () => {
       const email = 'test@example.com';
       const password = 'password123';
 
       usersService.findByEmail.mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (comparePassword as jest.Mock).mockResolvedValue(true);
       jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
       usersService.setRefreshToken.mockResolvedValue(undefined);
 
       const result = await service.login(email, password);
 
       expect(usersService.findByEmail).toHaveBeenCalledWith(email);
-      expect(bcrypt.compare).toHaveBeenCalledWith(password, mockUser.password);
+      expect(comparePassword).toHaveBeenCalledWith(password, mockUser.password);
       expect(jwtService.sign).toHaveBeenCalledTimes(2);
       expect(result).toEqual({
         accessToken: 'accessToken',
@@ -125,7 +137,7 @@ describe('AuthService', () => {
 
       await expect(service.login(email, password)).rejects.toThrow(UnauthorizedException);
       await expect(service.login(email, password)).rejects.toThrow('Invalid credentials');
-      expect(bcrypt.compare).not.toHaveBeenCalled();
+      expect(comparePassword).not.toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException if password is invalid', async () => {
@@ -133,14 +145,17 @@ describe('AuthService', () => {
       const password = 'wrongPassword';
 
       usersService.findByEmail.mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      (comparePassword as jest.Mock).mockResolvedValue(false);
 
       await expect(service.login(email, password)).rejects.toThrow(UnauthorizedException);
       await expect(service.login(email, password)).rejects.toThrow('Invalid credentials');
-      expect(bcrypt.compare).toHaveBeenCalledWith(password, mockUser.password);
+      expect(comparePassword).toHaveBeenCalledWith(password, mockUser.password);
     });
   });
 
+  // ---------------------------
+  // REFRESH
+  // ---------------------------
   describe('refresh', () => {
     it('should refresh tokens with valid refresh token', async () => {
       const userId = 1;

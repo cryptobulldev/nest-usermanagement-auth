@@ -5,9 +5,12 @@ import { IUserRepository } from './repositories/user.repository.interface';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import * as bcrypt from 'bcrypt';
+import { hashPassword } from '../common/utils/hash.util';
 
-jest.mock('bcrypt');
+// ✅ Mock the hash utility
+jest.mock('../common/utils/hash.util', () => ({
+  hashPassword: jest.fn(),
+}));
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -48,6 +51,9 @@ describe('UsersService', () => {
     jest.clearAllMocks();
   });
 
+  // ---------------------------
+  // CREATE
+  // ---------------------------
   describe('create', () => {
     it('should create a new user with hashed password', async () => {
       const createDto: CreateUserDto = {
@@ -57,7 +63,7 @@ describe('UsersService', () => {
       };
 
       const hashedPassword = 'hashedPassword123';
-      (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+      (hashPassword as jest.Mock).mockResolvedValue(hashedPassword);
       repository.create.mockResolvedValue({
         ...mockUser,
         ...createDto,
@@ -66,7 +72,7 @@ describe('UsersService', () => {
 
       const result = await service.create(createDto);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(createDto.password, 10);
+      expect(hashPassword).toHaveBeenCalledWith(createDto.password);
       expect(repository.create).toHaveBeenCalledWith({
         ...createDto,
         password: hashedPassword,
@@ -75,6 +81,9 @@ describe('UsersService', () => {
     });
   });
 
+  // ---------------------------
+  // FIND BY EMAIL
+  // ---------------------------
   describe('findByEmail', () => {
     it('should return user by email', async () => {
       const email = 'test@example.com';
@@ -97,6 +106,9 @@ describe('UsersService', () => {
     });
   });
 
+  // ---------------------------
+  // FIND BY ID
+  // ---------------------------
   describe('findById', () => {
     it('should return user by id', async () => {
       const id = 1;
@@ -118,12 +130,13 @@ describe('UsersService', () => {
     });
   });
 
+  // ---------------------------
+  // UPDATE
+  // ---------------------------
   describe('update', () => {
     it('should update user without password', async () => {
       const id = 1;
-      const updateDto: UpdateUserDto = {
-        name: 'Updated Name',
-      };
+      const updateDto: UpdateUserDto = { name: 'Updated Name' };
 
       repository.update.mockResolvedValue({
         ...mockUser,
@@ -133,7 +146,7 @@ describe('UsersService', () => {
       const result = await service.update(id, updateDto);
 
       expect(repository.update).toHaveBeenCalledWith(id, updateDto);
-      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(hashPassword).not.toHaveBeenCalled();
       expect(result).toEqual({
         ...mockUser,
         ...updateDto,
@@ -148,7 +161,7 @@ describe('UsersService', () => {
       };
 
       const hashedPassword = 'newHashedPassword';
-      (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+      (hashPassword as jest.Mock).mockResolvedValue(hashedPassword);
       repository.update.mockResolvedValue({
         ...mockUser,
         name: updateDto.name!,
@@ -157,7 +170,7 @@ describe('UsersService', () => {
 
       const result = await service.update(id, updateDto);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(updateDto.password, 10);
+      expect(hashPassword).toHaveBeenCalledWith(updateDto.password);
       expect(repository.update).toHaveBeenCalledWith(id, {
         ...updateDto,
         password: hashedPassword,
@@ -166,6 +179,9 @@ describe('UsersService', () => {
     });
   });
 
+  // ---------------------------
+  // SET REFRESH TOKEN
+  // ---------------------------
   describe('setRefreshToken', () => {
     it('should save refresh token for user', async () => {
       const id = 1;
