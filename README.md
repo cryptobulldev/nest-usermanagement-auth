@@ -1,208 +1,317 @@
-# 🚀 NestJS Modular Application
+## 🧱 NestJS SOLID Auth API
 
-A **senior-level NestJS application** built with **TypeScript** and **TypeORM**, designed using **Clean Architecture** and implementing **SOLID principles**.  
-It demonstrates enterprise-grade engineering practices — modular boundaries, dependency injection, layered architecture, and comprehensive testing — making it scalable, maintainable, and production-ready.
+A clean, scalable NestJS backend implementing SOLID principles, JWT + Refresh Token Authentication, and full tooling for code quality and testing.
 
+## 🚀 Features
 
-## 🏗️ Architecture Overview
+✅ Clean Architecture (SOLID + Modular)
+  - Repository interfaces decouple services from database implementation
+  - Each module has single responsibility
+  - Fully testable and maintainable
 
-This project follows **Clean Architecture** principles and enforces **SOLID** design through:
+✅ Authentication System (JWT + Refresh)
+  - Access (15 min) and Refresh (7 days) tokens
+  - Password hashing via bcrypt through hash.util.ts
+  - Secure refresh token persistence
 
-- **Modular organization:** Each feature (`auth`, `users`, etc.) encapsulates its own controllers, services, and DTOs.  
-- **Dependency Injection:** Business logic depends on abstractions via NestJS’s `@Injectable()` and `@InjectRepository()`.  
-- **Repository pattern:** TypeORM repositories isolate persistence logic from domain logic.  
-- **Separation of concerns:** Controllers handle transport logic; services contain business logic; entities define persistence.  
-- **Extensibility:** New modules or features can be added without modifying existing ones.
+✅ Tooling & Developer Experience
+  - ESLint + Prettier + Husky + Lint-Staged
+  - Jest for Unit and E2E testing
+  - TypeScript strict mode
+  - Centralized configuration via @nestjs/config
 
-Together, these ensure a **highly testable, extensible, and maintainable** codebase suitable for large-scale systems.
+✅ Database Agnostic
+  - Works with PostgreSQL or MongoDB
+  - Swappable repository pattern
 
+## 📁 Folder Structure
 
-### 📂 Folder Structure
-
-```text
-src/
- ├── app.module.ts
- ├── main.ts
- ├── common/                     # shared interceptors, guards, pipes, filters
- ├── database/
- │   ├── entities/               # TypeORM entities
- │   │   ├── user.entity.ts
- │   │   └── ...
- │   ├── migrations/             # DB migrations
- │   └── ormconfig.ts            # TypeORM config
- ├── auth/
- │   ├── auth.controller.ts
- │   ├── auth.service.ts
- │   ├── auth.module.ts
- │   ├── dto/
- │   └── auth.service.spec.ts     # Unit tests for AuthService
- ├── users/
- │   ├── users.controller.ts
- │   ├── users.service.ts
- │   ├── users.module.ts
- │   ├── dto/
- │   ├── entities/
- │   │   └── user.entity.ts
- │   └── users.service.spec.ts    # Unit tests for UsersService
-test/
- ├── app.e2e-spec.ts              # E2E tests for app bootstrap
- └── auth.e2e-spec.ts             # E2E tests for /auth routes
-
- ```
-
- ## ⚡ Key Highlights
-
-✅ Clean & SOLID Architecture
-
-Clear separation between controllers, services, and repositories.
-
-✅ TypeORM Integration
-
-Entity management, migrations, and repository abstraction with dependency injection.
-
-✅ Dependency Injection
-
-Loosely coupled design through NestJS providers and @InjectRepository() usage.
-
-✅ Testing-first Approach
-
-Includes both unit and E2E tests for key modules (auth, users).
-
-✅ Configurable Environments
-
-Supports .env, .env.test, .env.prod for environment-specific configuration.
-
-✅ Production-Ready Tooling
-
-Pre-configured ESLint, Prettier, and Jest to enforce quality and consistency.
-
-✅ Scalable Design
-
-Modular monolith architecture that can evolve into microservices easily.
-
-## ⚙️ Installation
-
-```bash
-npm install
-cp .env.example .env
+```
+nestjs-solid-auth-demo/
+├── jest.config.ts
+├── package.json
+├── test/
+│   ├── jest-e2e.json
+│   ├── app.e2e-spec.ts
+│   └── auth.e2e-spec.ts
+└── src/
+    ├── app.module.ts
+    ├── common/
+    │   └── utils/
+    │       └── hash.util.ts
+    ├── auth/
+    │   ├── auth.module.ts
+    │   ├── auth.service.ts
+    │   ├── auth.service.spec.ts
+    │   ├── auth.controller.ts
+    │   └── interfaces/
+    ├── users/
+    │   ├── users.module.ts
+    │   ├── users.service.ts
+    │   ├── users.service.spec.ts
+    │   ├── repositories/
+    │   ├── dto/
+    │   └── entities/
+    └── main.ts
 ```
 
-- Update your .env file with valid credentials:
+## ⚙️ Environment Setup
 
-```env
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
-DATABASE_NAME=nestjs_app
-JWT_SECRET=supersecretkey
+```bash
+
 PORT=3000
-```
 
-## 🗃️ Database Setup (TypeORM)
+# Database
+DB_HOST=localhost
+DB_PORT=27017
+DB_USER=
+DB_PASS=
+DB_NAME=nestjs_solid_auth
+
+# JWT
+JWT_SECRET=supersecret
+JWT_REFRESH_SECRET=refreshsupersecret
+
+```
+If using PostgreSQL:
 
 ```bash
-# Generate migration from entity changes
-npm run typeorm migration:generate -- -n InitSchema
 
-# Run migrations
-npm run typeorm migration:run
-```
-
-- Example configuration (app.module.ts):
-
-```ts
-TypeOrmModule.forRoot({
-  type: 'postgres',
-  host: process.env.DATABASE_HOST,
-  port: +process.env.DATABASE_PORT,
-  username: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  autoLoadEntities: true,
-  synchronize: false, // keep false in production
-});
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=nestjs_solid_auth
 
 ```
 
-## ▶️ Running the Application
+## 🧩 Installation
 
 ```bash
+
+git clone https://github.com/<your-username>/nestjs-solid-auth-demo.git
+cd nestjs-solid-auth-demo
+npm install
+
+```
+
+## ▶️ Running the App
+
+```bash
+
+# Development
 npm run start:dev
+
+# Production
+npm run build && npm run start:prod
+
+```
+Visit → http://localhost:3000
+
+
+## 🔐 Auth Endpoints
+
+| Method | Endpoint         | Description                  |
+| ------ | ---------------- | ---------------------------- |
+| `POST` | `/auth/register` | Register new user            |
+| `POST` | `/auth/login`    | Login user and return tokens |
+| `POST` | `/auth/refresh`  | Refresh tokens               |
+
+Example – Register
+
+```bash
+
+POST /auth/register
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "StrongPass123",
+  "name": "John Doe"
+}
+
 ```
 
-Default: http://localhost:3000
+Example – Login Response
+
+```bash
+
+{
+  "accessToken": "eyJhbGciOiJIUzI1...",
+  "refreshToken": "eyJhbGciOiJIUzI1..."
+}
+
+```
+
+## 👤 User Management Endpoints
+
+| Method   | Endpoint              | Description                                         |
+| -------- | --------------------- | --------------------------------------------------- |
+| `GET`    | `/users`              | Get all users *(admin only, optional)*              |
+| `GET`    | `/users/:id`          | Get user by ID                                      |
+| `GET`    | `/users/email/:email` | Find user by email                                  |
+| `PATCH`  | `/users/:id`          | Update user details (rehashes password if provided) |
+| `DELETE` | `/users/:id`          | Delete user (soft or hard delete)                   |
+
+
+Example – Update User
+
+```bash
+
+PATCH /users/1
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+
+{
+  "name": "Updated Name",
+  "password": "NewPassword123"
+}
+
+```
 
 ## 🧪 Testing
 
-### 🧩 Unit Tests
+Unit Tests (inside modules)
 
 ```bash
-npm run test
+
+src/auth/auth.service.spec.ts
+src/users/users.service.spec.ts
+
 ```
 
-- auth.service.spec.ts — tests authentication logic (register/login/JWT).
-- users.service.spec.ts — tests CRUD operations and validation.
-
-
-### 🌐 End-to-End Tests
+E2E Tests
 
 ```bash
-npm run test:e2e
+
+test/app.e2e-spec.ts
+test/auth.e2e-spec.ts
+
 ```
 
-- app.e2e-spec.ts — checks app bootstrap and routes.
-- auth.e2e-spec.ts — validates auth endpoints and flow.
+Run:
 
-### 📊 Coverage
 ```bash
-npm run test:cov
+
+npm run test       # Unit tests
+npm run test:e2e   # E2E tests
+npm run test:cov   # Coverage report
+
 ```
-Generates report in /coverage.
 
-## 🧰 Tooling & Code Quality
+## 🧹 Code Quality & Tooling
 
-| Tool                    | Purpose                          |
-| ----------------------- | -------------------------------- |
-| **ESLint**              | Linting and code consistency     |
-| **Prettier**            | Code formatting                  |
-| **Husky + lint-staged** | Pre-commit checks                |
-| **Jest**                | Unit + integration testing       |
-| **Supertest**           | E2E HTTP testing                 |
-| **TypeORM**             | ORM for PostgreSQL and other DBs |
-| **TypeScript**          | Static typing and modern tooling |
+Run Lint
 
 ```bash
+
 npm run lint
+
 ```
 
-## 📖 Scripts Summary
+Format Code
 
-Command	Description
-| Command              | Description                  |
-| -------------------- | ---------------------------- |
-| `npm run start:dev`  | Run in development mode      |
-| `npm run start:prod` | Run compiled build           |
-| `npm run build`      | Compile TypeScript           |
-| `npm run test`       | Run unit tests               |
-| `npm run test:e2e`   | Run end-to-end tests         |
-| `npm run test:cov`   | Generate coverage report     |
-| `npm run lint`       | Run linter                   |
-| `npm run typeorm`    | Execute TypeORM CLI commands |
+```bash
+
+npm run format
+
+```
+
+Pre-commit Hook (Husky)
+- Automatically runs ESLint + Prettier on staged files.
+
+## 🧰 Tooling Stack
+
+| Tool                    | Purpose                           |
+| ----------------------- | --------------------------------- |
+| **ESLint + Prettier**   | Code formatting & static analysis |
+| **Husky + Lint-Staged** | Pre-commit quality enforcement    |
+| **Jest + Supertest**    | Unit & integration testing        |
+| **TypeORM / Mongoose**  | Database layer abstraction        |
+| **@nestjs/config**      | Environment management            |
+| **bcrypt**              | Password hashing                  |
 
 
-## 🧩 Future Enhancements
-✅ Add caching layer (Redis)
-✅ Integrate Swagger for REST API docs
-✅ Implement role-based access control (RBAC)
-✅ Add CI/CD pipelines
-✅ Integrate centralized logging (Winston / Pino)
+## 🧱 Jest Configuration
 
+- jest.config.ts
 
-## 🧭 Design Philosophy
+```ts
 
-This project serves as a real-world reference for senior NestJS + TypeORM backend architecture:
-- Business logic isolated from transport and persistence layers
-- Repository pattern ensures testability and decoupling
-- Modular structure supports continuous scaling
-- Implements SOLID and Clean Architecture principles across all modules
+import type { Config } from 'jest';
+
+const config: Config = {
+  moduleFileExtensions: ['js', 'json', 'ts'],
+  rootDir: '.',
+  testRegex: '.*\\.spec\\.ts$',
+  transform: { '^.+\\.(t|j)s$': 'ts-jest' },
+  collectCoverageFrom: ['src/**/*.(t|j)s', '!src/main.ts'],
+  coverageDirectory: './coverage',
+  testEnvironment: 'node',
+  moduleNameMapper: { '^src/(.*)$': '<rootDir>/src/$1' },
+};
+
+export default config;
+
+```
+
+- jest.config.ts
+
+```ts
+
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": { "^.+\\.(t|j)s$": "ts-jest" },
+  "testEnvironment": "node"
+}
+
+```
+
+## 🧾 NPM Scripts
+
+```json
+
+"scripts": {
+  "start": "nest start",
+  "start:dev": "nest start --watch",
+  "start:prod": "node dist/main",
+  "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+  "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+  "test": "jest --config jest.config.ts",
+  "test:watch": "jest --watch --config jest.config.ts",
+  "test:cov": "jest --coverage --config jest.config.ts",
+  "test:e2e": "jest --config ./test/jest-e2e.json",
+  "prepare": "husky"
+}
+
+```
+
+## 🧩 Common Utilities
+
+- src/common/utils/hash.util.ts
+
+```ts
+
+import * as bcrypt from 'bcrypt';
+
+export const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 10;
+  return bcrypt.hash(password, saltRounds);
+};
+
+export const comparePassword = async (
+  plain: string,
+  hashed: string,
+): Promise<boolean> => bcrypt.compare(plain, hashed);
+
+```
+
+## ✅ Summary:
+
+- This project gives you a production-ready NestJS boilerplate featuring:
+- Clean modular structure (Auth + Users)
+- SOLID-aligned architecture
+- Secure JWT authentication
+- Consistent testing and linting setup
+- High scalability for enterprise APIs

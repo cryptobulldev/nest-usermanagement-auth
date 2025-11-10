@@ -40,9 +40,7 @@ export class UsersService {
    * Update user info, re-hash password if provided
    */
   async update(id: number, dto: UpdateUserDto): Promise<User | null> {
-    const updateData = dto.password
-      ? { ...dto, password: await hashPassword(dto.password) }
-      : dto;
+    const updateData = dto.password ? { ...dto, password: await hashPassword(dto.password) } : dto;
     return this.userRepo.update(id, updateData);
   }
 
