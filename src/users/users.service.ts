@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { IUserRepository } from './repositories/user.repository.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 
@@ -12,8 +13,8 @@ export class UsersService {
     private readonly userRepo: IUserRepository,
   ) {}
   async create(dto: CreateUserDto): Promise<User> {
-    const hash = await bcrypt.hash(dto.password, 10);
-    return this.userRepo.create({ ...dto, password: hash });
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+    return this.userRepo.create({ ...dto, password: passwordHash });
   }
 
   async findByEmail(email: string): Promise<User | null> {

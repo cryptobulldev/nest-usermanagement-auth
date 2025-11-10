@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+
 import * as bcrypt from 'bcrypt';
 import type { IAuthService } from './interfaces/auth-service.interface.ts';
 import { User } from '../users/entities/user.entity';
@@ -33,6 +34,7 @@ export class AuthService implements IAuthService {
   async login(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid credentials');
+
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
     return this.signTokens(user);
@@ -40,8 +42,7 @@ export class AuthService implements IAuthService {
 
   async refresh(userId: number, token: string) {
     const user = await this.usersService.findById(userId);
-    if (user.refreshToken !== token)
-      throw new UnauthorizedException('Invalid refresh token');
+    if (user.refreshToken !== token) throw new UnauthorizedException('Invalid refresh token');
     return this.signTokens(user);
   }
 }

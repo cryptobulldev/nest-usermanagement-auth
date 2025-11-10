@@ -18,7 +18,16 @@ import { AuthModule } from './auth/auth.module';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const db = config.get('app.database');
+        const db = config.get<{
+          host: string;
+          port: number;
+          username: string;
+          password: string;
+          name: string;
+        }>('app.database');
+        if (!db) {
+          throw new Error('Database configuration is missing');
+        }
         // in case of postgres, use the following configuration
         return {
           type: 'postgres',

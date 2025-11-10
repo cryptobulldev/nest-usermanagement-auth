@@ -1,6 +1,17 @@
 import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './jwt/jwt-refresh.guard';
+
+interface RefreshTokenRequest extends Request {
+  user: {
+    userId: number;
+    email: string;
+  };
+  body: {
+    refreshToken: string;
+  };
+}
 
 @Controller('auth')
 export class AuthController {
@@ -18,8 +29,8 @@ export class AuthController {
 
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  refresh(@Req() req) {
+  refresh(@Req() req: RefreshTokenRequest) {
     const user = req.user;
-    return this.authService.refresh(user.sub, req.body.refreshToken);
+    return this.authService.refresh(user.userId, req.body.refreshToken);
   }
 }
