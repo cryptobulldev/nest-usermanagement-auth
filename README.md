@@ -1,98 +1,208 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 NestJS Modular Application
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A **senior-level NestJS application** built with **TypeScript** and **TypeORM**, designed using **Clean Architecture** and implementing **SOLID principles**.  
+It demonstrates enterprise-grade engineering practices — modular boundaries, dependency injection, layered architecture, and comprehensive testing — making it scalable, maintainable, and production-ready.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## 🏗️ Architecture Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project follows **Clean Architecture** principles and enforces **SOLID** design through:
 
-## Project setup
+- **Modular organization:** Each feature (`auth`, `users`, etc.) encapsulates its own controllers, services, and DTOs.  
+- **Dependency Injection:** Business logic depends on abstractions via NestJS’s `@Injectable()` and `@InjectRepository()`.  
+- **Repository pattern:** TypeORM repositories isolate persistence logic from domain logic.  
+- **Separation of concerns:** Controllers handle transport logic; services contain business logic; entities define persistence.  
+- **Extensibility:** New modules or features can be added without modifying existing ones.
+
+Together, these ensure a **highly testable, extensible, and maintainable** codebase suitable for large-scale systems.
+
+
+### 📂 Folder Structure
+
+```text
+src/
+ ├── app.module.ts
+ ├── main.ts
+ ├── common/                     # shared interceptors, guards, pipes, filters
+ ├── database/
+ │   ├── entities/               # TypeORM entities
+ │   │   ├── user.entity.ts
+ │   │   └── ...
+ │   ├── migrations/             # DB migrations
+ │   └── ormconfig.ts            # TypeORM config
+ ├── auth/
+ │   ├── auth.controller.ts
+ │   ├── auth.service.ts
+ │   ├── auth.module.ts
+ │   ├── dto/
+ │   └── auth.service.spec.ts     # Unit tests for AuthService
+ ├── users/
+ │   ├── users.controller.ts
+ │   ├── users.service.ts
+ │   ├── users.module.ts
+ │   ├── dto/
+ │   ├── entities/
+ │   │   └── user.entity.ts
+ │   └── users.service.spec.ts    # Unit tests for UsersService
+test/
+ ├── app.e2e-spec.ts              # E2E tests for app bootstrap
+ └── auth.e2e-spec.ts             # E2E tests for /auth routes
+
+ ```
+
+ ## ⚡ Key Highlights
+
+✅ Clean & SOLID Architecture
+
+Clear separation between controllers, services, and repositories.
+
+✅ TypeORM Integration
+
+Entity management, migrations, and repository abstraction with dependency injection.
+
+✅ Dependency Injection
+
+Loosely coupled design through NestJS providers and @InjectRepository() usage.
+
+✅ Testing-first Approach
+
+Includes both unit and E2E tests for key modules (auth, users).
+
+✅ Configurable Environments
+
+Supports .env, .env.test, .env.prod for environment-specific configuration.
+
+✅ Production-Ready Tooling
+
+Pre-configured ESLint, Prettier, and Jest to enforce quality and consistency.
+
+✅ Scalable Design
+
+Modular monolith architecture that can evolve into microservices easily.
+
+## ⚙️ Installation
 
 ```bash
-$ npm install
+npm install
+cp .env.example .env
 ```
 
-## Compile and run the project
+- Update your .env file with valid credentials:
+
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=nestjs_app
+JWT_SECRET=supersecretkey
+PORT=3000
+```
+
+## 🗃️ Database Setup (TypeORM)
 
 ```bash
-# development
-$ npm run start
+# Generate migration from entity changes
+npm run typeorm migration:generate -- -n InitSchema
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# Run migrations
+npm run typeorm migration:run
 ```
 
-## Run tests
+- Example configuration (app.module.ts):
+
+```ts
+TypeOrmModule.forRoot({
+  type: 'postgres',
+  host: process.env.DATABASE_HOST,
+  port: +process.env.DATABASE_PORT,
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
+  autoLoadEntities: true,
+  synchronize: false, // keep false in production
+});
+
+```
+
+## ▶️ Running the Application
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
+Default: http://localhost:3000
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🧪 Testing
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 🧩 Unit Tests
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- auth.service.spec.ts — tests authentication logic (register/login/JWT).
+- users.service.spec.ts — tests CRUD operations and validation.
 
-## Resources
 
-Check out a few resources that may come in handy when working with NestJS:
+### 🌐 End-to-End Tests
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run test:e2e
+```
 
-## Support
+- app.e2e-spec.ts — checks app bootstrap and routes.
+- auth.e2e-spec.ts — validates auth endpoints and flow.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 📊 Coverage
+```bash
+npm run test:cov
+```
+Generates report in /coverage.
 
-## Stay in touch
+## 🧰 Tooling & Code Quality
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Tool                    | Purpose                          |
+| ----------------------- | -------------------------------- |
+| **ESLint**              | Linting and code consistency     |
+| **Prettier**            | Code formatting                  |
+| **Husky + lint-staged** | Pre-commit checks                |
+| **Jest**                | Unit + integration testing       |
+| **Supertest**           | E2E HTTP testing                 |
+| **TypeORM**             | ORM for PostgreSQL and other DBs |
+| **TypeScript**          | Static typing and modern tooling |
 
-## License
+```bash
+npm run lint
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 📖 Scripts Summary
+
+Command	Description
+| Command              | Description                  |
+| -------------------- | ---------------------------- |
+| `npm run start:dev`  | Run in development mode      |
+| `npm run start:prod` | Run compiled build           |
+| `npm run build`      | Compile TypeScript           |
+| `npm run test`       | Run unit tests               |
+| `npm run test:e2e`   | Run end-to-end tests         |
+| `npm run test:cov`   | Generate coverage report     |
+| `npm run lint`       | Run linter                   |
+| `npm run typeorm`    | Execute TypeORM CLI commands |
+
+
+## 🧩 Future Enhancements
+✅ Add caching layer (Redis)
+✅ Integrate Swagger for REST API docs
+✅ Implement role-based access control (RBAC)
+✅ Add CI/CD pipelines
+✅ Integrate centralized logging (Winston / Pino)
+
+
+## 🧭 Design Philosophy
+
+This project serves as a real-world reference for senior NestJS + TypeORM backend architecture:
+- Business logic isolated from transport and persistence layers
+- Repository pattern ensures testability and decoupling
+- Modular structure supports continuous scaling
+- Implements SOLID and Clean Architecture principles across all modules
