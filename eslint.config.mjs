@@ -33,11 +33,13 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/users.service.ts', '**/auth.service.ts'],
+    files: ['**/users.service.ts', '**/auth.service.ts', '**/*.spec.ts', '**/*.e2e-spec.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
 );
