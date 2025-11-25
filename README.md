@@ -36,24 +36,65 @@ nestjs-solid-auth-demo/
 │   └── auth.e2e-spec.ts
 └── src/
     ├── app.module.ts
-    ├── common/
-    │   └── utils/
-    │       └── hash.util.ts
-    ├── auth/
-    │   ├── auth.module.ts
-    │   ├── auth.service.ts
-    │   ├── auth.service.spec.ts
-    │   ├── auth.controller.ts
-    │   └── interfaces/
-    ├── users/
-    │   ├── users.module.ts
-    │   ├── users.service.ts
-    │   ├── users.service.spec.ts
-    │   ├── repositories/
-    │   ├── dto/
-    │   └── entities/
-    └── main.ts
+    ├── main.ts
+    ├── config/
+    │   └── app.config.ts
+    ├── application/
+    │   ├── auth/
+    │   │   ├── auth.service.ts
+    │   │   ├── auth.service.spec.ts
+    │   │   └── dto/
+    │   └── users/
+    │       ├── users.service.ts
+    │       ├── users.service.spec.ts
+    │       └── dto/
+    ├── domain/
+    │   ├── auth/entities/refresh-token.entity.ts
+    │   └── users/
+    │       ├── entities/user.entity.ts
+    │       └── repositories/user.repository.interface.ts
+    ├── infrastructure/
+    │   └── database/repositories/users/user.repository.ts
+    ├── modules/
+    │   ├── auth/
+    │   │   ├── auth.controller.ts
+    │   │   ├── auth.module.ts
+    │   │   └── jwt/
+    │   └── users/
+    │       ├── users.controller.ts
+    │       └── users.module.ts
+    └── shared/
+        ├── filters/http-exception.filter.ts
+        └── utils/hash.util.ts
 ```
+
+## 🧠 Design Decisions
+
+- **Layered domain architecture** – `application`, `domain`, `infrastructure`, and `modules` directories prevent framework-specific details from leaking into business logic. Services only rely on interfaces, so swapping persistence or transport adapters does not require refactors across the codebase.
+- **Contract-first DTOs** – Validation happens at the boundary using DTO classes, which keeps controllers thin and lets the same use-cases power REST, CLI, or worker transports without duplicating logic.
+- **Repository ports** – `IUserRepository` and similar interfaces sit in the `domain` layer while the TypeORM implementation lives under `infrastructure`. This enforces dependency inversion and makes it trivial to add Mongo or in-memory stores for tests.
+- **Shared cross-cutting tools** – Filters, hashing helpers, and configuration logic live under `shared`/`config`, giving every module a single source of truth for security, logging, and environment access.
+
+## ⚖️ Trade-offs
+
+- **More folders up front** – The richer layout adds onboarding overhead compared with a flat Nest project. However, the payoff appears as the project grows and teams can touch isolated layers without merge conflicts.
+- **Explicit abstractions** – Interfaces and adapters mean extra files and DI bindings. This might feel heavy for very small APIs, but it guarantees that business rules stay test-friendly and agnostic to TypeORM or Express.
+- **Config indirection** – Pulling secrets and TTLs from `ConfigService` eliminates magic values but requires stricter .env management and clearer documentation (covered in this README).
+- **Migration tooling** – TypeORM CLI now points to compiled entities under `domain`. Keeping them in sync demands a reliable build step before generating migrations.
+
+## 📈 Scalability & Maintainability
+
+- **Horizontal scaling** – Stateless Nest providers and JWT authentication allow multiple instances behind a load balancer with minimal coordination; refresh tokens are stored in the database with hashed values, so revocation stays consistent across nodes.
+- **Database growth** – Repository pagination, indexed columns (e.g., unique email), and migration-ready config mean Postgres can scale vertically, while the clean repository port makes migrating to sharded databases or Mongo feasible.
+- **Team workflows** – The application/domain split encourages separate squads to own modules without stepping on each other. CI can run module-level tests or e2e suites independently thanks to the clear folder partitioning.
+- **Extension points** – Adding features such as role-based access, audit logs, or queue workers means creating new modules/use-cases without touching existing controllers. The shared config + DI approach keeps wiring straightforward.
+
+## 🔮 Future Enhancements
+
+- Add an `AppConfigService` wrapper that exposes typed getters for env values and caches derived settings (SMTP, third-party API keys, etc.).
+- Introduce presenter/serializer layers so controllers never return raw entities—handy when masking sensitive fields or versioning responses.
+- Expand the `shared` layer with logging and metrics decorators to standardize observability across modules.
+- Provide example Docker Compose files for Postgres/Redis plus a seed script so teams can spin up local stacks quickly.
 
 ## ⚙️ Environment Setup
 
@@ -80,7 +121,7 @@ If using PostgreSQL:
 DB_PORT=5432
 DB_USER=postgres
 DB_PASS=postgres
-DB_NAME=nestjs_solid_auth
+DB_NAME=<DB_NAME>
 
 ```
 
@@ -170,12 +211,12 @@ Content-Type: application/json
 
 ## 🧪 Testing
 
-Unit Tests (inside modules)
+Unit Tests (application layer)
 
 ```bash
 
-src/auth/auth.service.spec.ts
-src/users/users.service.spec.ts
+src/application/auth/auth.service.spec.ts
+src/application/users/users.service.spec.ts
 
 ```
 
@@ -289,7 +330,7 @@ export default config;
 
 ## 🧩 Common Utilities
 
-- src/common/utils/hash.util.ts
+- src/shared/utils/hash.util.ts
 
 ```ts
 

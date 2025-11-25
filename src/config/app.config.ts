@@ -11,4 +11,6 @@ export default registerAs('app', () => ({
   },
   jwtSecret: process.env.JWT_SECRET ?? 'secret',
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET ?? 'refresh_secret',
+  jwtAccessTtl: process.env.JWT_ACCESS_TTL ?? '15m',
+  jwtRefreshTtl: process.env.JWT_REFRESH_TTL ?? '7d',
 }));
